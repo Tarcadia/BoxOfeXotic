@@ -22,7 +22,7 @@ def server_thread():
 
 def sender_thread():
     sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM);
-    addr = ('127.0.0.1', random.choice(range(30000, 40000)));
+    addr = (config.SENDER_HOST, random.choice(range(*config.SENDER_PORT_RANGE)));
     sender.bind(addr);
     while True:
         try:
