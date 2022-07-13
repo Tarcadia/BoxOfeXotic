@@ -5,25 +5,26 @@ import time
 
 import config
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
+server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM);
 server.bind(config.SERVER_ADDRESS);
-server.listen();
 
 queue = [];
 
 def server_thread():
     while True:
-        connect, address = server.accept();
-        recv = connect.recv(2);
-        port = int.from_bytes(recv, byteorder='big', signed=False);
-        queue.append([config.SEND_REPEAT, (address[0], port)]);
-        print("START: %s:%s" % (address[0], port));
-        connect.close();
+        recv, addr = server.recvfrom(1500);
+        info = int.from_bytes(recv, byteorder='big', signed=False);
+        queue.append([config.SEND_REPEAT, addr]);
+        print("START %s: %s:%s" % (info, *addr));
 
 def sender_thread():
     sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM);
-    addr = (config.SENDER_HOST, random.choice(range(*config.SENDER_PORT_RANGE)));
-    sender.bind(addr);
+    addr = (config.SERVER_HOST, random.choice(config.SENDER_PORT_RANGE));
+    try:
+        sender.bind(addr);
+    except OSError as err:
+        return;
+    print("SENDER: %s:%s" % addr);
     while True:
         try:
             target = queue.pop(0);

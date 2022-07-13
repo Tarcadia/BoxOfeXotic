@@ -1,18 +1,12 @@
 import random
 import socket
-import threading
-import time
 
 import config
 
 recver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM);
-addr = ('127.0.0.1', random.choice(range(30000, 40000)));
+addr = ('', random.choice(range(30000, 40000)));
 recver.bind(addr);
-
-connect = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
-connect.connect(config.SERVER_ADDRESS);
-connect.send(addr[1].to_bytes(length=2, byteorder='big', signed=False));
-connect.close();
+recver.sendto("This is a test.".encode(config.ENCODING), config.SERVER_ADDRESS);
 
 recv_count = 0;
 match_count = 0;
