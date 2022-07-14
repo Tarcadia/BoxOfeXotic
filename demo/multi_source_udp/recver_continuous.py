@@ -1,5 +1,6 @@
 import random
 import socket
+import time
 
 import config
 
@@ -11,6 +12,7 @@ recv_count = 0;
 match_count = 0;
 
 while recv_count < config.SEND_REPEAT:
+    time.sleep(0.33);
     recver.sendto("This is a test.".encode(config.ENCODING), config.SERVER_ADDRESS);
     try:
         data, addr = recver.recvfrom(config.RECV_SIZE);
