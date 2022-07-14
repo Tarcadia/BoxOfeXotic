@@ -16,8 +16,10 @@ def server_thread():
         info = recv.decode(config.ENCODING);
         queue.append([config.SEND_REPEAT, addr]);
         print("REQ FROM %s:%s >> %s" % (*addr, info));
-        # server.sendto(recv, addr);
+        server.sendto(recv, addr);
+        print("ECHO TO %s:%s" % addr);
         server.sendto(config.SEND_DATA, addr);
+        print("SEND TO %s:%s FROM SERVER" % addr);
 
 def sender_thread():
     sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM);
