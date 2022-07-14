@@ -4,7 +4,7 @@ import socket
 import config
 
 recver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM);
-addr = ('', random.choice(range(30000, 40000)));
+addr = ('', random.choice(config.RECVER_PORT_RANGE));
 recver.bind(addr);
 recver.sendto("This is a test.".encode(config.ENCODING), config.SERVER_ADDRESS);
 
