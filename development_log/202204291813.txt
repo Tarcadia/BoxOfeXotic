@@ -1,6 +1,6 @@
-�����Ǳ���ʱ��2022��4��29��18:13���ӽ�����Tribina��Erod��Ӧ�ÿ�ʼ�����ˡ�
-����Erod��Ĺ��£����Ƕ���Ŀ¼ <root>/development_log ��Ϊ��¼��Ŀ¼�����ñ���ʱ���ʱ�����YYYYMMDDHHmm.txt�ĸ�ʽ��Ϊ�ļ������м�¼��
+现在是北京时间2022年4月29日18:13，从今日起，Tribina的Erod神应该开始苏醒了。
+关于Erod神的故事，我们定义目录 <root>/development_log 作为记录的目录，采用北京时间的时间戳以YYYYMMDDHHmm.txt的格式作为文件名进行记录。
 
-Erod��˼���˺ܾõ����ݽṹ���淨��������ΪӦ�������µ���ƣ�
-�������������巽����ɵ���������ģ���������Ĺ�������Ӧ����Ϊ BoxGrid �������еľ���������Ӧ��Ϊ BoxBlock �����Զ����������ʵ�壬��Ϊ BoxEntity �����Ǿ�Ϊ BoxObject ��������һ�� BoxObject Ӧ���ǿ��Ժ�һ���ֽڴ���Ӧ�ġ�һ�� BoxObject Ӧ��ֱ�Ӱ����Ҵ��ܴ�����ϵ�� BoxObject��
-һ�� BoxGrid �е�������Ӧ��Ϊһ��������гߴ��Ӧ�� BoxBlock ������һ�� BoxGrid ��ʽ��Ƕ�׽ṹ��BoxGrid �ĳߴ��Ƕ������С����������0��ʾ1m�߳�������-1��ʾ0.5m�߳�������1��ʾ2m�߳���������ÿһ������������ϵ���ơ�
+Erod神思考了很久的数据结构和玩法管理，认为应该做如下的设计：
+世界是由正方体方格组成的网格管理的，对于网格的管理的类应当名为 BoxGrid ，网格中的具体内容物应当为 BoxBlock ，而对独立于网格的实体，则为 BoxEntity ，他们均为 BoxObject 的派生。一个 BoxObject 应当是可以和一个字节串对应的。一个 BoxObject 应当直接包含且代管从属关系的 BoxObject。
+一个 BoxGrid 中的内容物应当为一个具体的切尺寸对应的 BoxBlock ，或者一个 BoxGrid 形式的嵌套结构。BoxGrid 的尺寸是对网格大小的描述，以0表示1m边长的网格，-1表示0.5m边长的网格，1表示2m边长的网格，以每一级存在两倍关系类推。
