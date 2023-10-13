@@ -1,6 +1,6 @@
 
-#ifndef __BOX_CORE_TYPES__
-#define __BOX_CORE_TYPES__
+#ifndef __BOX_CORE_TYPE__
+#define __BOX_CORE_TYPE__
 
 #define T_BOX_NULL          0x00ui8
 #define T_BOX_BYTE          0x01ui8
@@ -94,4 +94,4 @@ typedef enum box_type
 
 
 
-#endif
+#endif /* __BOX_CORE_TYPE__ */
