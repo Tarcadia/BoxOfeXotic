@@ -1,0 +1,7 @@
+太复杂了，受不了了，从头设计。
+
+首先我们期望这个系统是分布式系统，这里引入BOX Server的架构：
+    1. Box Server是整个服务端集群的架构
+    2. Box Server上有一个controller，一组name server，一组processor
+    3. 系统运行时，controller监控各个processor并提供nameserver的信息，processor通过nameserver查询自己需要访问的resource所在的processor
+    4. 每个processor只能写自己own的resource，可以读所有resource
