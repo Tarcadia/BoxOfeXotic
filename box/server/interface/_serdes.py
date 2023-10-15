@@ -14,7 +14,7 @@ ENCODING = "utf-8"
 CALLS = [
     p2c.Ping,
     p2c.Pong,
-    p2c.Pand,
+    p2c.Pang,
     p2c.RegistCall,
     p2c.RegistResp,
     p2c.SeekCall,
