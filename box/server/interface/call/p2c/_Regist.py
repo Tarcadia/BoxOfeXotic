@@ -5,9 +5,9 @@ from dataclasses import field
 from time import time
 from typing import List
 
-from ..._session import session_id
-from ..control import Processor
+from .._session import session_id
 from .._CallBase import CallBase
+from ..control._Hello import Processor
 
 
 @dataclass

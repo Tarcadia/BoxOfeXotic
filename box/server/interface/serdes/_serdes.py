@@ -4,8 +4,8 @@ from dataclasses import asdict
 from json import loads as jloads
 from json import dumps as jdumps
 
-from .call import CallBase
-from . import call
+from box.server.interface.call import CallBase
+from box.server.interface import call
 
 ENCODING = "utf-8"
 

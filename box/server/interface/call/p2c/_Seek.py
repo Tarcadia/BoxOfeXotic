@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import List
 
-from ..._session import session_id
+from .._session import session_id
 from .._CallBase import CallBase
 from ._Regist import RegistEntry
 
