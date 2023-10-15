@@ -5,6 +5,8 @@ from queue import Empty, Queue
 from typing import Any
 
 
+SESSION_TIMEOUT = 3
+
 def session_id() -> int:
     return randint(1, 0xFFFFFFFFFFFFFFFF)
 
@@ -18,7 +20,7 @@ class Sessions():
     def session_id(self) -> int:
         return randint(1, self._max_session)
 
-    def get(self, session: int, block: bool = False, timeout: float = 0) -> Any:
+    def get(self, session: int, block: bool = True, timeout: float = SESSION_TIMEOUT) -> Any:
         _q = Queue(1)
         self._sessions[session] = _q
         try:
