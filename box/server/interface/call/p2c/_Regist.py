@@ -6,17 +6,23 @@ from time import time
 from typing import List
 
 from ..._session import session_id
+from ..control import Processor
 from .._CallBase import CallBase
 
 
 @dataclass
 class RegistEntry:
     resource        : str
-    host            : str
-    port            : int
+    processor       : Processor
     timestamp       : float                 = field(default_factory=time)
     ttl             : int                   = 60
-    token           : str                   = ""
+
+    def __post_init__(self):
+        self.processor =(
+            Processor(**self.processor)
+            if isinstance(self.processor, dict)
+            else self.processor
+        )
 
 
 @dataclass

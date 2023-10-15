@@ -1,7 +1,7 @@
 
 
 from ._CallBase import CallBase
+from .control import *
 from .p2c import *
-from .c2p import *
 from .p2p import *
 

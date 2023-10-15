@@ -5,23 +5,28 @@ from json import loads as jloads
 from json import dumps as jdumps
 
 from .call import CallBase
+from .call import control
 from .call import p2c
-from .call import c2p
 from .call import p2p
 
 
 ENCODING = "utf-8"
 CALLS = [
-    p2c.Ping,
-    p2c.Pong,
-    p2c.Pang,
+    control.Ping,
+    control.Pong,
+    control.Pang,
+    control.Hello,
+    control.HelloResp,
+    control.AccessPull,
+    control.AccessPush,
+    control.AccessPushOff,
+    control.CommandCall,
+    control.CommandResp,
     p2c.RegistCall,
     p2c.RegistResp,
     p2c.SeekCall,
     p2c.SeekResp,
     p2c.LoggingCall,
-    c2p.CommandCall,
-    c2p.CommandResp,
     p2p.ResReadCall,
     p2p.ResReadResp,
     p2p.ResWriteCall,
