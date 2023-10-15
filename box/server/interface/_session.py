@@ -6,18 +6,17 @@ from typing import Any
 
 
 def session_id() -> int:
-    return randint(0, 0xFFFFFFFFFFFFFFFF)
+    return randint(1, 0xFFFFFFFFFFFFFFFF)
 
 
 class Sessions():
 
-    @classmethod
-    def session_id(cls) -> int:
-        return session_id()
-
-
-    def __init__(self) -> None:
+    def __init__(self, max_session = 0xFFFFFFFFFFFFFFFF) -> None:
+        self._max_session = max_session
         self._sessions = {}
+
+    def session_id(self) -> int:
+        return randint(1, self._max_session)
 
     def get(self, session: int, block: bool = False, timeout: float = 0) -> Any:
         _q = Queue(1)
