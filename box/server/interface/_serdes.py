@@ -5,36 +5,15 @@ from json import loads as jloads
 from json import dumps as jdumps
 
 from .call import CallBase
-from .call import control
-from .call import p2c
-from .call import p2p
-
+from . import call
 
 ENCODING = "utf-8"
+
 CALLS = [
-    control.Ping,
-    control.Pong,
-    control.Pang,
-    control.Hello,
-    control.HelloResp,
-    control.AccessPull,
-    control.AccessPush,
-    control.AccessPushOff,
-    control.CommandCall,
-    control.CommandResp,
-    p2c.RegistCall,
-    p2c.RegistResp,
-    p2c.SeekCall,
-    p2c.SeekResp,
-    p2c.LoggingCall,
-    p2p.ResReadCall,
-    p2p.ResReadResp,
-    p2p.ResWriteCall,
-    p2p.ResWriteResp,
-    p2p.ResRpcCall,
-    p2p.ResRpcrCall,
-    p2p.ResRpcrResp,
-    p2p.ResNackResp,
+    getattr(call, _key)
+    for _key in dir(call)
+    if isinstance(getattr(call, _key), type)
+    and issubclass(getattr(call, _key), CallBase)
 ]
 
 CALL2IDX = {CALLS[_idx] : _idx for _idx in range(len(CALLS))}
