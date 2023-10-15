@@ -125,4 +125,8 @@ def logging(self: LoggingCall, ctx: Context):
 server = Server("127.0.0.1", 62222)
 server.start()
 
-
+try:
+    while True:
+        pass
+except KeyboardInterrupt:
+    exit()
