@@ -56,8 +56,8 @@ def pong(self: Ping, ctx: Context):
     _pang = ctx.sessions.get(_pong.session)
     _t1 = time() - _pong.timestamp
     _t0 = _pang.timestamp - _ping.timestamp
-    print("Usage: %f \%." % (100 * _ping.usage))
-    print("RTT: %f s." % (0.5 * (_t0 + _t1)))
+    print("Usage: %.1f%%." % (100 * _ping.usage))
+    print("RTT: %.3fms." % (1000 * 0.5 * (_t0 + _t1)))
 
 
 
