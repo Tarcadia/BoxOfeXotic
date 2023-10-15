@@ -4,19 +4,19 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import List
 
-from .._session import session_id
-from .._Call import Call
+from ..._session import session_id
+from .._CallBase import CallBase
 from ._Regist import RegistEntry
 
 
 @dataclass
-class Seek(Call):
+class SeekCall(CallBase):
     session         : int                   = field(default_factory=session_id)
     resources       : List[str]             = field(default_factory=list)
 
 
 @dataclass
-class SeekResp(Call):
+class SeekResp(CallBase):
     resp            : int
     entries         : List[RegistEntry]
 

@@ -6,28 +6,28 @@ from logging import DEBUG, INFO, WARNING, CRITICAL, ERROR
 from time import time
 from typing import List
 
-from .._Call import Call
+from .._CallBase import CallBase
 
 
 @dataclass
-class Logging(Call):
+class LoggingCall(CallBase):
     ts              : int                   = field(default_factory=time)   # Timestamp
     level           : int                   = INFO
     tag             : List[str]             = field(default_factory=list)
     msg             : str                   = ""
 
-def Debug(*args, **kwargs):
-    return Logging(*args, level=DEBUG, **kwargs)
+def DebugCall(*args, **kwargs):
+    return LoggingCall(*args, level=DEBUG, **kwargs)
 
-def Info(*args, **kwargs):
-    return Logging(*args, level=INFO, **kwargs)
+def InfoCall(*args, **kwargs):
+    return LoggingCall(*args, level=INFO, **kwargs)
     
-def Warning(*args, **kwargs):
-    return Logging(*args, level=WARNING, **kwargs)
+def WarningCall(*args, **kwargs):
+    return LoggingCall(*args, level=WARNING, **kwargs)
     
 def Critical(*args, **kwargs):
-    return Logging(*args, level=CRITICAL, **kwargs)
+    return LoggingCall(*args, level=CRITICAL, **kwargs)
     
 def Error(*args, **kwargs):
-    return Logging(*args, level=ERROR, **kwargs)
+    return LoggingCall(*args, level=ERROR, **kwargs)
 

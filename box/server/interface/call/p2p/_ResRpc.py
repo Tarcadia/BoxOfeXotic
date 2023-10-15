@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
 
-from .._session import session_id
-from .._Call import Call
+from ..._session import session_id
+from .._CallBase import CallBase
 
 
 @dataclass
@@ -22,7 +22,7 @@ class RpcObject():
 
 
 @dataclass
-class ResRpc(Call):
+class ResRpcCall(CallBase):
     subject         : RpcSubject
     object          : RpcObject
 
@@ -40,12 +40,12 @@ class ResRpc(Call):
 
 
 @dataclass
-class ResRpcr(ResRpc):
+class ResRpcrCall(ResRpcCall):
     session         : int                   = field(default_factory=session_id)
 
 
 @dataclass
-class ResRpcrResp(Call):
+class ResRpcrResp(CallBase):
     resp            : int
     ret             : Any                   = ""
 

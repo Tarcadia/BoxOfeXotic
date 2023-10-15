@@ -5,8 +5,8 @@ from dataclasses import field
 from time import time
 from typing import List
 
-from .._session import session_id
-from .._Call import Call
+from ..._session import session_id
+from .._CallBase import CallBase
 
 
 @dataclass
@@ -20,7 +20,7 @@ class RegistEntry:
 
 
 @dataclass
-class Regist(Call):
+class RegistCall(CallBase):
     session         : int                   = field(default_factory=session_id)
     entries         : List[RegistEntry]     = field(default_factory=list)
 
@@ -34,7 +34,7 @@ class Regist(Call):
 
 
 @dataclass
-class RegistResp(Call):
+class RegistResp(CallBase):
     resp            : int
     entries_ack     : List[bool]
 

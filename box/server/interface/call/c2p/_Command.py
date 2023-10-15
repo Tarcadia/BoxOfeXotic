@@ -4,12 +4,12 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
 
-from .._session import session_id
-from .._Call import Call
+from ..._session import session_id
+from .._CallBase import CallBase
 
 
 @dataclass
-class Command(Call):
+class CommandCall(CallBase):
     command         : str
     args            : list                  = field(default_factory=list)
     kwargs          : dict                  = field(default_factory=dict)
@@ -17,7 +17,7 @@ class Command(Call):
 
 
 @dataclass
-class CommandResp(Call):
+class CommandResp(CallBase):
     resp            : int
     ret             : Any                   = ""
 

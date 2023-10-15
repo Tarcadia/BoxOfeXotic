@@ -3,7 +3,7 @@
 from typing import Any
 
 
-class Call():
+class CallBase():
 
     _callback = None
 
