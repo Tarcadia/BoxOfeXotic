@@ -43,8 +43,8 @@ def serialize(call: CallBase) -> bytes:
 
 def deserialize(serialized: bytes) -> CallBase:
     try:
-        _idx = int.from_bytes(serialized[LEN_BYTELEN : LEN_BYTELEN + IDX_BYTELEN], BYTEORDER, signed=False)
-        _bytes = serialized[LEN_BYTELEN + IDX_BYTELEN : ]
+        _idx = int.from_bytes(serialized[ : IDX_BYTELEN], BYTEORDER, signed=False)
+        _bytes = serialized[IDX_BYTELEN : ]
         return IDX2CALL[_idx](**jloads(_bytes.decode(ENCODING)))
     except Exception as e:
         raise DeserializeException(e)
