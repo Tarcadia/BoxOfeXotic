@@ -51,19 +51,16 @@ class DeserializeException(Exception):
 def serialize(call: CallBase) -> bytes:
     try:
         _bytes = jdumps(asdict(call)).encode(ENCODING)
-        _idx = CALL2IDX[call.__class__].to_bytes(IDX_BYTELEN, BYTEORDER)
-        _len = (len(_idx) + len(_bytes)).to_bytes(LEN_BYTELEN, BYTEORDER)
-        return _len + _idx + _bytes
+        _idx = CALL2IDX[call.__class__].to_bytes(IDX_BYTELEN, BYTEORDER, signed=False)
+        return _idx + _bytes
     except Exception as e:
         raise SerializeException(e)
 
 
 def deserialize(serialized: bytes) -> CallBase:
     try:
-        _len = int.from_bytes(serialized[ : LEN_BYTELEN], BYTEORDER)
-        _idx = int.from_bytes(serialized[LEN_BYTELEN : LEN_BYTELEN + IDX_BYTELEN], BYTEORDER)
+        _idx = int.from_bytes(serialized[LEN_BYTELEN : LEN_BYTELEN + IDX_BYTELEN], BYTEORDER, signed=False)
         _bytes = serialized[LEN_BYTELEN + IDX_BYTELEN : ]
-        assert len(_bytes) + IDX_BYTELEN == _len
         return IDX2CALL[_idx](**jloads(_bytes.decode(ENCODING)))
     except Exception as e:
         raise DeserializeException(e)
