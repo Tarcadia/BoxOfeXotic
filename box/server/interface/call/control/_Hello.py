@@ -33,11 +33,3 @@ class Hello(CallBase):
 @dataclass
 class HelloResp(CallBase):
     resp            : int
-    processor       : Processor
-
-    def __post_init__(self):
-        self.processor =(
-            Processor(**self.processor)
-            if isinstance(self.processor, dict)
-            else self.processor
-        )

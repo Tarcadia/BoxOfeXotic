@@ -27,7 +27,6 @@ class AccessPush(CallBase):
     token           : str                   = ""
     timestamp       : float                 = field(default_factory=time)
     ttl             : int                   = 3600
-    session         : int                   = field(default_factory=session_id)
 
     def __post_init__(self):
         self.processor =(
