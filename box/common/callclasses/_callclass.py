@@ -2,56 +2,77 @@
 
 from dataclasses import dataclass, is_dataclass
 from functools import wraps
-from inspect import isgenerator, isgeneratorfunction
-from typing import Callable
 
 
-class _CallBase():
-    def __callclass_init__(self, func: Callable, interface: dataclass) -> None:
-        self.__callclass_func__ = func
-        self.__callclass_interface__ = interface
-        if self.__callclass_func__ and isgeneratorfunction(self.__callclass_func__):
-            self.__callclass_generator__ = self.__callclass_func__(self)
-        elif self.__callclass_func__:
-            def __genfunc__():
-                yield from tuple(self.__callclass_func__(self))
-            self.__callclass_generator__ = __genfunc__()
-        else:
-            def __genfunc__():
-                yield from ()
-            self.__callclass_generator__ = __genfunc__()
+
+_PARAM_FUNC = "__callclass_func__"
+
+_PARAM_CLASSMETHOD_IMPL = "impl"
+_PARAM_MAGIC__MODULE__ = "__module__"
+_PARAM_MAGIC__CALL__ = "__call__"
+
+def __callclass_impl(cls, func):
+    setattr(cls, _PARAM_FUNC, func)
+    return func
+
+def __callclass_call(self):
+    func = getattr(self, _PARAM_FUNC, None)
+    if func:
+        return func()
+
+
+def _process_class(cls, func=None):
+    if not is_dataclass(cls):
+        cls = dataclass(cls)
     
-    def __callclass_resp__(self, send = None) -> None:
-        if isgenerator(self.__callclass_generator__):
-            return self.__callclass_generator__.send(send)
+    if not func is None:
+        setattr(cls, _PARAM_FUNC, func)
+    elif not hasattr(cls, _PARAM_FUNC):
+        setattr(cls, _PARAM_FUNC, None)
+
+    if not hasattr(cls, _PARAM_CLASSMETHOD_IMPL):
+        setattr(cls, _PARAM_CLASSMETHOD_IMPL, classmethod(__callclass_impl))
+    
+    setattr(cls, _PARAM_MAGIC__CALL__, __callclass_call)
+    
+    return cls
 
 
 def is_callclass(obj):
     cls = obj if isinstance(obj, type) else type(obj)
-    return issubclass(cls, _CallBase)
+    return is_dataclass(cls) and hasattr(obj, _PARAM_FUNC)
 
 
-def callclass(interface: dataclass):
-    if not is_dataclass(interface):
-        raise TypeError("Can only create call class from a dataclass interface.")
-    def wrapper(func: Callable) -> type:
-        def __post_init__(self):
-            _CallBase.__callclass_init__(self, func, interface)
-        _wrapped = type(
-            interface.__name__,
-            (interface, _CallBase),
-            {
-                "__post_init__": __post_init__,
-                "__module__": func.__module__,
-            },
+def callclass(cls=None, func=None):
+    def wrap(cls):
+        return _process_class(cls, func)
+    
+    if cls is None:
+        return wrap
+    
+    return wrap(cls)
+
+
+def impl(cls):
+    def wrap(func):
+        if not func.__name__ == cls.__name__:
+            raise SyntaxWarning("Suggested to create a callclass implementation with the same name of the base class.")
+        wrapped = type(
+            cls.__name__,
+            (cls,),
+            { _PARAM_MAGIC__MODULE__: func.__module__ }
         )
-        return dataclass(_wrapped)
-    return wrapper
+        return _process_class(wrapped, func)
+    
+    if not isinstance(cls, type) or not is_dataclass(cls):
+        raise TypeError("Can only create callclass from a dataclass.")
+    
+    return wrap
 
 
-
-def as_function(call: callclass):
-    @wraps(call)
+def as_function(cls):
+    @wraps(cls)
     def wrapped(*args, **kwargs):
-        return next(call(*args, **kwargs))
+        return cls(*args, **kwargs)()
     return wrapped
+
