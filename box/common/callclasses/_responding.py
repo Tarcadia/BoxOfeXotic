@@ -5,7 +5,7 @@ from ._callclass import callclass, is_callclass
 from ._responded import is_respondedclass
 
 from ._callclass import _PARAM_MAGIC__MODULE__
-from ._responded import _PARAM_RESPONSES
+from ._responded import _PARAM_RESPONSES, _PARAM_RESP_SESSION
 from ._responded import _PARAM_FIELD_SESSION_TYPE
 
 
@@ -16,6 +16,18 @@ _PARAM_RESP_RSESSION = "__callclass_resp_rsession__"
 _PARAM_FIELD_RSESSION = "session_resp"
 _PARAM_FIELD_RSESSION_TYPE = _PARAM_FIELD_SESSION_TYPE
 _PARAM_METHOD_RESPONDINGADD = "responding"
+_PARAM_CLASSMETHOD_MAKERESPONSE = "make_response"
+
+def __callclass_makeresponse(cls, obj, *args, **kwargs):
+    if not type(obj) in getattr(cls, _PARAM_RESPOND_TO):
+        raise ValueError("Can only respond to a responded class.")
+    return cls(
+        *args, **kwargs,
+        **{
+            getattr(cls, _PARAM_RESP_RSESSION):
+            getattr(obj, getattr(obj, _PARAM_RESP_SESSION))
+        }
+    )
 
 def __callclass_onresponding(self):
     _rsession_field = getattr(self, _PARAM_RESP_RSESSION, _PARAM_FIELD_RSESSION)
@@ -46,7 +58,7 @@ def _process_class(cls,
     
     cls = dataclass(cls)
     cls = make_dataclass(cls.__name__, 
-        fields=[(_rsession, _rsession_type)],
+        fields=[(_rsession, _rsession_type, None)],
         bases=(cls,),
         module=cls.__module__,
     )
@@ -58,7 +70,9 @@ def _process_class(cls,
     elif not hasattr(cls, _PARAM_RESPOND_TO):
         setattr(cls, _PARAM_RESPOND_TO, [])
 
-    if not hasattr(cls, _PARAM_RESP_RSESSION):
+    if not rsession is None:
+        setattr(cls, _PARAM_RESP_RSESSION, rsession)
+    elif not hasattr(cls, _PARAM_RESP_RSESSION):
         setattr(cls, _PARAM_RESP_RSESSION, _PARAM_FIELD_RSESSION)
     
     setattr(cls, _PARAM_METHOD_RESPONDINGADD,
@@ -68,6 +82,8 @@ def _process_class(cls,
             else __callclass_regresponding(self, responded)
         )
     )
+
+    setattr(cls, _PARAM_CLASSMETHOD_MAKERESPONSE, classmethod(__callclass_makeresponse))
 
     return cls
 
