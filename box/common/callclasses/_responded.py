@@ -37,9 +37,10 @@ def __callclass_responded_call(self, session=None, default=None):
     self_response_get = getattr(self, _PARAM_METHOD_RESPONSE_GET)
     func = getattr(self, _PARAM_FUNC, None)
     with self_response_context(session) as context:
+        _ret = None
         if func:
-            func()
-        return self_response_get(session, default=default)
+            _ret = func()
+        return _ret, self_response_get(session, default=default)
 
 def __callclass_response_context(obj, session=None):
     _session_field = getattr(obj, _PARAM_RESP_SESSION, _PARAM_FIELD_SESSION)
