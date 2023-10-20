@@ -15,7 +15,8 @@ _PARAM_RESP_RSESSION = "__callclass_resp_rsession__"
 
 _PARAM_FIELD_RSESSION = "session_resp"
 _PARAM_FIELD_RSESSION_TYPE = _PARAM_FIELD_SESSION_TYPE
-_PARAM_METHOD_RESPONDINGADD = "responding"
+_PARAM_METHOD_RESPONDING = "responding"
+_PARAM_METHOD_DORESPOND = "do_respond"
 _PARAM_CLASSMETHOD_MAKERESPONSE = "make_response"
 
 def __callclass_makeresponse(cls, obj, *args, **kwargs):
@@ -29,7 +30,7 @@ def __callclass_makeresponse(cls, obj, *args, **kwargs):
         }
     )
 
-def __callclass_onresponding(self):
+def __callclass_dorespond(self):
     _rsession_field = getattr(self, _PARAM_RESP_RSESSION, _PARAM_FIELD_RSESSION)
     _rsession = getattr(self, _rsession_field)
     _responding = getattr(self, _PARAM_RESPOND_TO)
@@ -51,7 +52,7 @@ def _process_class(cls,
     to=None,
     rsession=None,
     rsession_type=None,
-    func=__callclass_onresponding,
+    func=__callclass_dorespond,
 ):
     _rsession = rsession if not rsession is None else _PARAM_FIELD_RSESSION
     _rsession_type = rsession_type if not rsession_type is None else _PARAM_FIELD_RSESSION_TYPE
@@ -75,7 +76,7 @@ def _process_class(cls,
     elif not hasattr(cls, _PARAM_RESP_RSESSION):
         setattr(cls, _PARAM_RESP_RSESSION, _PARAM_FIELD_RSESSION)
     
-    setattr(cls, _PARAM_METHOD_RESPONDINGADD,
+    setattr(cls, _PARAM_METHOD_RESPONDING,
         lambda self=None, responded=None: (
             __callclass_regresponding(cls, responded)
             if self is None
@@ -83,6 +84,7 @@ def _process_class(cls,
         )
     )
 
+    setattr(cls, _PARAM_METHOD_DORESPOND, __callclass_dorespond)
     setattr(cls, _PARAM_CLASSMETHOD_MAKERESPONSE, classmethod(__callclass_makeresponse))
 
     return cls
@@ -96,7 +98,7 @@ def is_respondingclass(obj):
 def respondingclass(to,
     rsession=None,
     rsession_type=None,
-    func=__callclass_onresponding,
+    func=__callclass_dorespond,
 ):
     def wrap(cls):
         return _process_class(cls, to, rsession, rsession_type, func)
