@@ -11,5 +11,8 @@ class Living():
     timestamp       : float
     ttl             : float
 
+    def live(self):
+        return self.timestamp + self.ttl
+    
     def is_alive(self):
-        return self.timestamp + self.ttl < time()
+        return self.live() < time()
