@@ -41,11 +41,12 @@ def __callclass_dorespond(self):
             continue
         _queue.put_nowait(self)
 
-def __callclass_regresponding(obj, responded):
-    if not is_respondedclass(responded):
-        raise ValueError("Can only respond to a responded class.")
+def __callclass_regresponding(obj, to=[]):
+    for responded in to:
+        if not is_respondedclass(responded):
+            raise ValueError("Can only respond to a responded class.")
     _respond_to = getattr(obj, _PARAM_RESPOND_TO)
-    setattr(obj, _PARAM_RESPOND_TO, [*_respond_to, responded])
+    setattr(obj, _PARAM_RESPOND_TO, [*_respond_to, *to])
 
 
 def _process_class(cls,
@@ -77,10 +78,10 @@ def _process_class(cls,
         setattr(cls, _PARAM_RESP_RSESSION, _PARAM_FIELD_RSESSION)
     
     setattr(cls, _PARAM_METHOD_RESPONDING,
-        lambda self=None, responded=None: (
-            __callclass_regresponding(cls, responded)
+        lambda self=None, to=[]: (
+            __callclass_regresponding(cls, to)
             if self is None
-            else __callclass_regresponding(self, responded)
+            else __callclass_regresponding(self, to)
         )
     )
 
