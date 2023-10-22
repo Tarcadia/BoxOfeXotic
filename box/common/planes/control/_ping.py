@@ -11,7 +11,8 @@ from box.common.callclasses import respondingclass
 
 @respondedclass
 class Ping():
-    timestamp       : float                 = field(default_factory=time)
+    address         : str
+    t0              : float                 = field(default_factory=time)
     desc            : str                   = ""
     usage           : float                 = nan
 
@@ -19,13 +20,15 @@ class Ping():
 @respondedclass
 @respondingclass(to=[Ping])
 class Pong():
+    address         : str
     t0              : float
-    timestamp       : float                 = field(default_factory=time)
+    t1              : float                 = field(default_factory=time)
 
 
 @respondingclass(to=[Pong])
 class Pang():
+    address         : str
     t0              : float
     t1              : float
-    timestamp       : float                 = field(default_factory=time)
+    t2              : float                 = field(default_factory=time)
 
