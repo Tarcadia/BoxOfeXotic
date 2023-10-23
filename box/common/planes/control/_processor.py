@@ -6,6 +6,7 @@ from typing import List
 from box.common.callclasses import callclass
 from box.common.callclasses import respondedclass
 from box.common.callclasses import respondingclass
+from box.common.resources import get_address, address_to_host_port
 from box.common.resources import Processor
 
 
@@ -30,6 +31,12 @@ class ProcessorRegisterResp():
 @respondedclass
 class ProcessorRegistryPull():
     addresses       : List[str]             = field(default_factory=list)
+
+    def __post_init__(self):
+        self.addresses = [
+            get_address(*address_to_host_port(address))
+            for address in self.addresses
+        ]
 
 @respondingclass(to=[ProcessorRegistryPull])
 class ProcessorRegistryPullResp():
