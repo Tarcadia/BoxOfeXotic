@@ -28,7 +28,7 @@ class CallResource():
 class CallResourceResponded():
     pass
 
-@respondingclass(to=[])
+@respondingclass(to=[CallResourceResponded])
 class CallResourceResponding():
     ret             : Any                   = ""
 
