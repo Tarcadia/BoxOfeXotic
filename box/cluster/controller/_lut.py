@@ -63,7 +63,7 @@ class LutNode():
     
     def insert(self, path, res):
         path = path.split("/")
-        _live = res.live()
+        _live = res.life()
         _now = time()
         _node = self
         _key, path = path[ :1 ], path[ 1: ]
@@ -93,7 +93,7 @@ class LutNode():
                 _node.max_live = max(_live, _node.max_live)
                 _ret = True
             elif (_node.resource.timestamp < res.timestamp
-            and _node.resource.live() < res.live()):
+            and _node.resource.life() < res.life()):
                 _node.resource = res
                 _node.last_modified = _now
                 _node.max_live = max(_live, _node.max_live)
@@ -116,10 +116,10 @@ class LutNode():
                 _max_live = 0
                 _dead_nodes = []
                 if not _node.resource is None:
-                    if _node.resource.live() < _now:
+                    if _node.resource.life() < _now:
                         _node.resource = None
                     else:
-                        _max_live = max(_max_live, _node.resource.live())
+                        _max_live = max(_max_live, _node.resource.life())
                 for key in _node.nodes:
                     if _node.nodes[key].max_live < _now:
                         _dead_nodes.append(key)

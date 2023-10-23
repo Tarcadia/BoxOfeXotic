@@ -32,7 +32,7 @@ class ProcDict():
                 return True
             else:
                 if (
-                    self.proc_dict[processor.address].live() < processor.live()
+                    self.proc_dict[processor.address].life() < processor.life()
                     and self.proc_dict[processor.address].timestamp < processor.timestamp
                 ):
                     self.proc_dict[processor.address] = processor
