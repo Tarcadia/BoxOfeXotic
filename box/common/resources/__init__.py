@@ -2,7 +2,7 @@
 
 from ._living import Living
 from ._processor import Processor
-from ._resource import Resource
+from ._resource import Resource, EmptyResource, EMPTY_RESOURCE_TTL
 
 from ._protocol import address_to_host_port, get_address
 from ._protocol import url_to_host_port_path, get_url
@@ -14,6 +14,8 @@ __all__ = (
     "Living",
     "Processor",
     "Resource",
+    "EmptyResource",
+    "EMPTY_RESOURCE_TTL",
     "address_to_host_port",
     "get_address",
     "url_to_host_port_path",
