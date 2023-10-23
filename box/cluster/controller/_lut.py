@@ -19,7 +19,7 @@ LUT_THREAD_POOL_UPDATE = ThreadPoolExecutor(max_workers=UPDATE_MAX_WORKERS)
 @dataclass
 class LutNode():
     resource        : Resource
-    max_live        : float
+    max_life        : float
     nodes           : dict                  = field(default_factory=dict)
     parent          : Any                   = None
     last_modified   : float                 = field(default_factory=time)
@@ -40,7 +40,7 @@ class LutNode():
     
 
     def is_alive(self):
-        self.max_live > time()
+        self.max_life > time()
 
 
     def query(self, path):
@@ -63,7 +63,7 @@ class LutNode():
     
     def insert(self, path, res):
         path = path.split("/")
-        _live = res.life()
+        _life = res.life()
         _now = time()
         _node = self
         _key, path = path[ :1 ], path[ 1: ]
@@ -80,7 +80,7 @@ class LutNode():
                 else:
                     _next = LutNode(None, parent=_node)
                 _node.last_modified = _now
-                _node.max_live = max(_live, _node.max_live)
+                _node.max_life = max(_life, _node.max_life)
             _key, path = path[ :1 ], path[ 1: ]
             while path and not _key:
                 _key, path = path[ :1 ], path[ 1: ]
@@ -90,13 +90,13 @@ class LutNode():
             if _node.resource is None:
                 _node.resource = res
                 _node.last_modified = _now
-                _node.max_live = max(_live, _node.max_live)
+                _node.max_life = max(_life, _node.max_life)
                 _ret = True
             elif (_node.resource.timestamp < res.timestamp
             and _node.resource.life() < res.life()):
                 _node.resource = res
                 _node.last_modified = _now
-                _node.max_live = max(_live, _node.max_live)
+                _node.max_life = max(_life, _node.max_life)
                 _ret = True
         
         LUT_THREAD_POOL_UPDATE.submit(_node.update)
@@ -113,22 +113,22 @@ class LutNode():
                 return
             
             with _node.modify_lock:
-                _max_live = 0
+                _max_life = 0
                 _dead_nodes = []
                 if not _node.resource is None:
                     if _node.resource.life() < _now:
                         _node.resource = None
                     else:
-                        _max_live = max(_max_live, _node.resource.life())
+                        _max_life = max(_max_life, _node.resource.life())
                 for key in _node.nodes:
-                    if _node.nodes[key].max_live < _now:
+                    if _node.nodes[key].max_life < _now:
                         _dead_nodes.append(key)
                     else:
-                        _max_live = max(_max_live, _node.nodes[key].max_live)
+                        _max_life = max(_max_life, _node.nodes[key].max_live)
                 for key in _dead_nodes:
                     _node.nodes.pop(key)
                 _node.last_modified = _now
-                _node.max_live = _max_live
+                _node.max_life = _max_life
             
             _node = _node.parent
     
