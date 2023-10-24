@@ -28,7 +28,7 @@ MAX_WORKERS = 32
 
 
 serdes              : Serdes                = Serdes()
-res_lut             : LutNode               = LutNode(EmptyResource(path="/"), inf)
+res_lut             : LutNode               = LutNode()
 proc_dict           : ProcDict              = ProcDict()
 
 thread_pool         : ThreadPoolExecutor    = None
