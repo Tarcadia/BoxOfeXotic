@@ -11,7 +11,7 @@ from box.common.resources._resource import Resource
 
 
 LUT_MODIFY_INTERVAL = 0.1
-UPDATE_MAX_WORKERS = 1
+UPDATE_MAX_WORKERS = 4
 LUT_THREAD_POOL_UPDATE = ThreadPoolExecutor(max_workers=UPDATE_MAX_WORKERS)
 
 

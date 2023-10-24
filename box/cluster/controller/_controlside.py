@@ -19,8 +19,8 @@ from box.common.planes.control import ResourceRegistryPush
 from box.common.resources import EmptyResource
 from box.common.resources import address_to_host_port
 
-from ._lut import LutNode
-from ._proc import ProcDict
+from box.cluster.util import LutNode
+from box.cluster.util import ProcDict
 
 
 
