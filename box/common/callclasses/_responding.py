@@ -53,7 +53,7 @@ def _process_class(cls,
     to=None,
     rsession=None,
     rsession_type=None,
-    func=__callclass_dorespond,
+    func=None,
 ):
     _rsession = rsession if not rsession is None else _PARAM_FIELD_RSESSION
     _rsession_type = rsession_type if not rsession_type is None else _PARAM_FIELD_RSESSION_TYPE
@@ -65,7 +65,9 @@ def _process_class(cls,
         module=cls.__module__,
     )
     
-    cls = callclass(cls, func)
+    cls = callclass(cls, None)
+    if getattr(cls, _PARAM_FUNC, None) is None:
+        setattr(cls, _PARAM_FUNC, __callclass_dorespond if func is None else func)
 
     if not to is None:
         setattr(cls, _PARAM_RESPOND_TO, to)
@@ -99,7 +101,7 @@ def is_respondingclass(obj):
 def respondingclass(to,
     rsession=None,
     rsession_type=None,
-    func=__callclass_dorespond,
+    func=None,
 ):
     def wrap(cls):
         return _process_class(cls, to, rsession, rsession_type, func)
