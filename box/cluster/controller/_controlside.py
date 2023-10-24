@@ -31,7 +31,7 @@ EMPTY_PROCESSOR = EmptyProcessor(address=BOX_NULL_URL)
 EMPTY_RESOURCE = EmptyResource(path="/")
 
 serdes              : Serdes                = Serdes()
-res_lut             : LutNode               = LutNode()
+res_lut             : LutNode               = LutNode(None)
 proc_dict           : ProcDict              = ProcDict()
 
 thread_pool         : ThreadPoolExecutor    = None
