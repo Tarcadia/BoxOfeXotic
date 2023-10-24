@@ -30,19 +30,21 @@ class Client():
             try:
                 _len = int.from_bytes(self._socket.recv(self.LEN_BYTELEN), self.BYTEORDER, signed=False)
                 _packet = self._socket.recv(_len)
-                if not self._func_run_connection is None:
-                    self._thread_pool_worker.submit(self._run_on_packet, self._socket, self._addr, _packet)
+                if not self._func_on_packet is None:
+                    self._thread_pool_worker.submit(self._run_on_packet, self._socket, self._address, _packet)
             except TimeoutError:
                 continue
             except Exception as e:
-                self._run_on_packet.close()
+                self._socket.close()
                 break
 
     def _run_on_packet(self, conn, addr, packet):
-        _resp = self._func_run_connection(addr, packet)
-        if _resp:
-            _len = len(_resp).to_bytes(self.LEN_BYTELEN, self.BYTEORDER, signed=False)
-            conn.send(_len + _resp)
+        _func = self._func_on_packet
+        if not _func is None:
+            _resp = _func(addr, packet)
+            if _resp:
+                _len = len(_resp).to_bytes(self.LEN_BYTELEN, self.BYTEORDER, signed=False)
+                conn.send(_len + _resp)
 
     def send(self, bytes):
         _len = len(bytes).to_bytes(self.LEN_BYTELEN, self.BYTEORDER, signed=False)
@@ -94,7 +96,7 @@ class ClientPool():
             try:
                 _len = int.from_bytes(conn.recv(self.LEN_BYTELEN), self.BYTEORDER, signed=False)
                 _packet = conn.recv(_len)
-                if not self._func_run_connection is None:
+                if not self._func_on_packet is None:
                     self._thread_pool_worker.submit(self._run_on_packet, conn, addr, _packet)
             except TimeoutError:
                 continue
@@ -104,10 +106,12 @@ class ClientPool():
         self._kill(get_address(*addr))
 
     def _run_on_packet(self, conn, addr, packet):
-        _resp = self._func_run_connection(addr, packet)
-        if _resp:
-            _len = len(_resp).to_bytes(self.LEN_BYTELEN, self.BYTEORDER, signed=False)
-            conn.send(_len + _resp)
+        _func = self._func_on_packet
+        if not _func is None:
+            _resp = _func(addr, packet)
+            if _resp:
+                _len = len(_resp).to_bytes(self.LEN_BYTELEN, self.BYTEORDER, signed=False)
+                conn.send(_len + _resp)
 
     def _update(self):
         _living = time() - self.TTL

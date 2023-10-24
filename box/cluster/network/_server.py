@@ -31,17 +31,19 @@ class Server():
                 while self._running:
                     _len = int.from_bytes(conn.recv(self.LEN_BYTELEN), self.BYTEORDER, signed=False)
                     _packet = conn.recv(_len)
-                    if not self._func_run_connection is None:
+                    if not self._func_on_packet is None:
                         self._thread_pool_worker.submit(self._run_on_packet, conn, addr, _packet)
             except Exception as e:
                 conn.close()
                 continue
 
     def _run_on_packet(self, conn, addr, packet):
-        _resp = self._func_run_connection(addr, packet)
-        if _resp:
-            _len = len(_resp).to_bytes(self.LEN_BYTELEN, self.BYTEORDER, signed=False)
-            conn.send(_len + _resp)
+        _func = self._func_on_packet
+        if not _func is None:
+            _resp = _func(addr, packet)
+            if _resp:
+                _len = len(_resp).to_bytes(self.LEN_BYTELEN, self.BYTEORDER, signed=False)
+                conn.send(_len + _resp)
 
     def on_packet(self, func):
         self._func_on_packet = func
