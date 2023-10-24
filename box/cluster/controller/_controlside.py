@@ -17,7 +17,6 @@ from box.common.planes.control import ResourceRegister, ResourceRegisterResp
 from box.common.planes.control import ResourceRegistryPull, ResourceRegistryPullResp
 from box.common.planes.control import ResourceRegistryPush
 from box.common.resources import EmptyResource
-from box.common.resources import address_to_host_port
 
 from box.cluster.util import LutNode
 from box.cluster.util import ProcDict
@@ -28,12 +27,13 @@ ADDRESS = "box://127.0.0.1:62222"
 MAX_WORKERS = 32
 
 
-serdes             : Serdes                = Serdes()
-res_lut            : LutNode               = LutNode(EmptyResource(), inf)
-proc_dict          : ProcDict              = ProcDict()
+serdes              : Serdes                = Serdes()
+res_lut             : LutNode               = LutNode(EmptyResource(), inf)
+proc_dict           : ProcDict              = ProcDict()
 
 thread_pool         : ThreadPoolExecutor    = None
 server              : Server                = None
+_initialized        : bool                  = False
 
 def _on_packet(addr, packet):
     _obj = serdes.desirialize(packet)
@@ -55,8 +55,14 @@ def init(address = ADDRESS, _thread_pool = None, _max_workers=MAX_WORKERS):
     server = Server(address, thread_pool_workers=thread_pool)
     server.on_packet(_on_packet)
 
+    global _initialized
+    _initialized = True
+
 def start():
-    server.start()
+    if _initialized:
+        server.start()
+    else:
+        raise RuntimeError("Module not initialized, call init() to initialize.")
 
 
 
