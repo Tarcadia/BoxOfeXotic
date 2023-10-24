@@ -1,10 +1,11 @@
 
 
-from dataclasses import dataclass, is_dataclass, make_dataclass
-from ._callclass import callclass, is_callclass
+from dataclasses import dataclass, make_dataclass
+from functools import wraps
+from ._callclass import callclass, is_callclass, impl
 from ._responded import is_respondedclass
 
-from ._callclass import _PARAM_MAGIC__MODULE__
+from ._callclass import _PARAM_FUNC
 from ._responded import _PARAM_RESPONSES, _PARAM_RESP_SESSION
 from ._responded import _PARAM_FIELD_SESSION_TYPE
 
@@ -108,21 +109,14 @@ def respondingclass(to,
     
     return wrap
 
-def responding(cls, to):
+def respondingimpl(cls, to):
     def wrap(func):
-        if not func.__name__ == cls.__name__:
-            raise SyntaxWarning("Suggested to create a callclass implementation with the same name of the base class.")
-        wrapped = type.new_class(
-            cls.__name__,
-            (cls),
-            { _PARAM_MAGIC__MODULE__: func.__module__ }
-        )
-        return _process_class(wrapped, to=to, func=func)
-    
-    if not isinstance(cls, type) or not is_dataclass(cls):
-        raise TypeError("Can only create callclass from a dataclass.")
-    
-    return wrap(cls)
+        @wraps(func)
+        def _func(self):
+            self.do_respond()
+            func(self)
+        return respondingclass(to=to)(impl(cls)(_func))
+    return wrap
 
 @respondingclass(to=[])
 class Responding:

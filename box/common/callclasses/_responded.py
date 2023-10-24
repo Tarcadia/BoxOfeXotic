@@ -1,10 +1,11 @@
 
 
 from dataclasses import dataclass, field, is_dataclass, make_dataclass
+from functools import wraps
 from queue import Empty, Queue
 from random import randrange
 
-from ._callclass import callclass, is_callclass
+from ._callclass import callclass, is_callclass, impl
 from ._callclass import _PARAM_FUNC, _PARAM_MAGIC__CALL__
 
 
@@ -220,6 +221,11 @@ def respondedclass(cls=None,
         return wrap
     
     return wrap(cls)
+
+def respondedimpl(cls):
+    def wrap(func):
+        return respondedclass(impl(cls)(func))
+    return wrap
 
 @respondedclass
 class Responded:
