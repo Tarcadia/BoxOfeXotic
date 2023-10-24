@@ -32,3 +32,7 @@ class LRUCache():
             self._cache[key] = _ret
         return _ret
     
+    def die(self, key):
+        with self._lock:
+            _ret = self._cache.pop(key, None)
+    
