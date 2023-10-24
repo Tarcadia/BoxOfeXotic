@@ -14,18 +14,18 @@ class ProcDict():
         self._modify_lock = Lock()
     
     
-    def update(self, address, desc=None, usage=None, rtt=None):
+    def update(self, address, timestamp=None, desc=None, usage=None, rtt=None):
+        _processor = self.proc_dict.get(address, None)
+        if _processor is None:
+            return
         if not rtt is None:
             self.rtt[address] = rtt
-        
-        if not address in self.proc_dict:
-            return
-        if not desc is None or not usage is None:
-            with self._modify_lock:
-                if not desc is None:
-                    self.proc_dict[address].desc = desc
-                if not usage is None:
-                    self.proc_dict[address].usage = usage
+        if not timestamp is None:
+            _processor.timestamp = timestamp
+        if not desc is None:
+            _processor.desc = desc
+        if not usage is None:
+            _processor.usage = usage
 
     def insert(self, processor: Processor):
         with self._modify_lock:
