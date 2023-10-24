@@ -8,10 +8,12 @@ from ._controlcallside import start as controlcallside_start
 
 
 
+ADDRESS = "box://127.0.0.2:62222"
+CONTROLLER_ADDRESS = "box://127.0.0.1:62222"
 MAX_WORKERS = 64
 thread_pool = ThreadPoolExecutor(max_workers=MAX_WORKERS)
 
-controlcallside_init("box://127.0.0.1:62222", thread_pool)
+controlcallside_init(CONTROLLER_ADDRESS, thread_pool)
 controlcallside_start()
 
 while True:
