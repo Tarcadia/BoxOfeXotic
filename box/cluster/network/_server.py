@@ -1,9 +1,10 @@
 
 
 from concurrent.futures import ThreadPoolExecutor
-from ipaddress import ip_address
-from socket import SOCK_STREAM, socket
+from socket import create_server
 from threading import Thread
+
+from box.common.resources import address_to_host_port
 
 
 class Server():
@@ -11,11 +12,9 @@ class Server():
     LEN_BYTELEN = 8
     BYTEORDER = "big"
 
-    def __init__(self, inet, host, port, max_connections=16, thread_pool_workers=None, max_workers=32) -> None:
-        if isinstance(address, str):
-            address = ip_address(address)
-        self._socket = socket(inet, SOCK_STREAM)
-        self._socket.bind((host, port))
+    def __init__(self, address, max_connections=16, thread_pool_workers=None, max_workers=32) -> None:
+        self._address = address_to_host_port(address) if isinstance(address, str) else address
+        self._socket = create_server(self._address)
         self._max_connections = max_connections
         self._thread_pool_connection = []
         self._thread_pool_worker = (
@@ -33,7 +32,7 @@ class Server():
                     _len = int.from_bytes(conn.recv(self.LEN_BYTELEN), self.BYTEORDER, signed=False)
                     _packet = conn.recv(_len)
                     if not self._func_run_connection is None:
-                        self._thread_pool.submit(self._run_on_packet, conn, addr, _packet)
+                        self._thread_pool_worker.submit(self._run_on_packet, conn, addr, _packet)
             except Exception as e:
                 conn.close()
                 continue
@@ -50,7 +49,6 @@ class Server():
     
 
     def start(self):
-        self._socket.listen()
         self._running = True
         for _iconn in range(self._max_connections):
             _thread = Thread(target=self._run_connection, name=f"Server Connection #{_iconn}")
