@@ -1,7 +1,7 @@
 
 
 from ._server import Server
-from ._client import Client, access
+from ._client import Client, ClientPool
 from ._serdes import Serdes
 from ._serdes import SerdesException, SerializeException, DeserializeException
 
@@ -10,7 +10,7 @@ from ._serdes import SerdesException, SerializeException, DeserializeException
 __all__ = (
     "Server",
     "Client",
-    "access",
+    "ClientPool",
     "Serdes",
     "SerdesException",
     "SerializeException",
