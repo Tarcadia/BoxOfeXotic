@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 
 
 BOX_DEFAULT_PORT = 6345
+BOX_NULL_URL = "box://null"
 
 
 
@@ -54,3 +55,18 @@ def get_host_address(host = None, port=BOX_DEFAULT_PORT):
         host = gethostbyname(gethostname())
     return get_address(host, port)
 
+
+def is_null_url(url: str):
+    if not url:
+        return True
+    try:
+        _url = urlparse(url)
+    except:
+        return True
+    host = _url.hostname
+    if not host:
+        return True
+    if host.lower() == "null":
+        return True
+    return False
+    

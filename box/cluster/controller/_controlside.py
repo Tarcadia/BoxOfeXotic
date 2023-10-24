@@ -17,6 +17,7 @@ from box.common.planes.control import ResourceRegister, ResourceRegisterResp
 from box.common.planes.control import ResourceRegistryPull, ResourceRegistryPullResp
 from box.common.planes.control import ResourceRegistryPush
 from box.common.resources import EmptyProcessor, EmptyResource
+from box.common.resources import BOX_NULL_URL
 
 from box.cluster.util import LutNode
 from box.cluster.util import ProcDict
@@ -26,6 +27,8 @@ from box.cluster.util import ProcDict
 ADDRESS = "box://127.0.0.1:62222"
 MAX_WORKERS = 32
 
+EMPTY_PROCESSOR = EmptyProcessor(address=BOX_NULL_URL)
+EMPTY_RESOURCE = EmptyResource(path="/")
 
 serdes              : Serdes                = Serdes()
 res_lut             : LutNode               = LutNode()
@@ -120,7 +123,7 @@ def ProcessorRegistryPull(self: ProcessorRegistryPull):
         processors[address] = (
             _processor
             if _processor
-            else EmptyProcessor()
+            else EMPTY_PROCESSOR
         )
     ProcessorRegistryPullResp.make_response(self, processors=processors)
 
@@ -163,7 +166,7 @@ def ResourceRegistryPull(self: ResourceRegistryPull):
         resources[path] = (
             _resource_line[-1]
             if _resource_line
-            else EmptyResource(path="/")
+            else EMPTY_RESOURCE
         )
     ResourceRegistryPullResp.make_response(self, resources=resources)
 
