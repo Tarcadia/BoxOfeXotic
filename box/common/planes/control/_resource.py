@@ -34,11 +34,11 @@ class ResourceRegistryPull():
 
 @respondingclass(to=[ResourceRegistryPull])
 class ResourceRegistryPullResp():
-    resources       : List[Resource]        = field(default_factory=list)
+    resources       : dict                  = field(default_factory=dict)
     
     def __post_init__(self):
-        for idx, resource in enumerate(self.resources):
-            self.resources[idx] = (
+        for key, resource in self.resources.items():
+            self.resources[key] = (
                 Resource(**resource)
                 if isinstance(resource, dict)
                 else resource

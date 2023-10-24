@@ -16,7 +16,7 @@ from box.common.planes.control import ProcessorRegistryPush
 from box.common.planes.control import ResourceRegister, ResourceRegisterResp
 from box.common.planes.control import ResourceRegistryPull, ResourceRegistryPullResp
 from box.common.planes.control import ResourceRegistryPush
-from box.common.resources import EmptyResource
+from box.common.resources import EmptyProcessor, EmptyResource
 
 from box.cluster.util import LutNode
 from box.cluster.util import ProcDict
@@ -28,7 +28,7 @@ MAX_WORKERS = 32
 
 
 serdes              : Serdes                = Serdes()
-res_lut             : LutNode               = LutNode(EmptyResource(), inf)
+res_lut             : LutNode               = LutNode(EmptyResource(path="/"), inf)
 proc_dict           : ProcDict              = ProcDict()
 
 thread_pool         : ThreadPoolExecutor    = None
@@ -72,7 +72,7 @@ def start():
 @respondedclass
 @Ping.impl
 def Ping(self: Ping):
-    pong = Pong.make_response(self, t0=self.t0)
+    pong = Pong.make_response(self, address=self.address, t0=self.t0)
     thread_pool.submit(pong)
     proc_dict.update(self.address, desc=self.desc, usage=self.usage)
 
@@ -114,7 +114,14 @@ def ProcessorRegisterResp(self: ProcessorRegisterResp):
 @respondedclass
 @ProcessorRegistryPull.impl
 def ProcessorRegistryPull(self: ProcessorRegistryPull):
-    processors = [proc_dict.query(address) for address in self.addresses]
+    processors = {}
+    for address in set(self.addresses):
+        _processor = proc_dict.query(address)
+        processors[address] = (
+            _processor
+            if _processor
+            else EmptyProcessor()
+        )
     ProcessorRegistryPullResp.make_response(self, processors=processors)
 
 @serdes.register
@@ -127,8 +134,6 @@ def ProcessorRegistryPullResp(self: ProcessorRegistryPullResp):
 @callclass
 @ProcessorRegistryPush.impl
 def ProcessorRegistryPush(self: ProcessorRegistryPush):
-    # for processor in self.processors:
-    #     proc_dict.insert(processor)
     pass
 
 
@@ -152,7 +157,14 @@ def ResourceRegisterResp(self: ResourceRegisterResp):
 @respondedclass
 @ResourceRegistryPull.impl
 def ResourceRegistryPull(self: ResourceRegistryPull):
-    resources = [res_lut.query(path)[-1] for path in self.paths]
+    resources = {}
+    for path in set(self.paths):
+        _resource_line = res_lut.query(path)
+        resources[path] = (
+            _resource_line[-1]
+            if _resource_line
+            else EmptyResource(path="/")
+        )
     ResourceRegistryPullResp.make_response(self, resources=resources)
 
 @serdes.register

@@ -40,11 +40,11 @@ class ProcessorRegistryPull():
 
 @respondingclass(to=[ProcessorRegistryPull])
 class ProcessorRegistryPullResp():
-    processors      : List[Processor]       = field(default_factory=list)
+    processors      : dict                  = field(default_factory=dict)
     
     def __post_init__(self):
-        for idx, processor in enumerate(self.processors):
-            self.processors[idx] = (
+        for key, processor in self.processors.items:
+            self.processors[key] = (
                 Processor(**processor)
                 if isinstance(processor, dict)
                 else processor
