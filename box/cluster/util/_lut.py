@@ -19,7 +19,7 @@ LUT_THREAD_POOL_UPDATE = ThreadPoolExecutor(max_workers=UPDATE_MAX_WORKERS)
 @dataclass
 class LutNode():
     resource        : Resource
-    max_life        : float
+    max_life        : float                 = 0
     nodes           : dict                  = field(default_factory=dict)
     parent          : Any                   = None
     last_modified   : float                 = field(default_factory=time)

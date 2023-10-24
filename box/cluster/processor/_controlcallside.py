@@ -7,9 +7,8 @@ from typing import List
 
 from box.cluster.network import Serdes
 from box.cluster.network import Client
-from box.common.callclasses import callclass
-from box.common.callclasses import respondedclass, is_respondedclass
-from box.common.callclasses import respondingclass
+from box.common.callclasses import impl, respondedimpl, respondingimpl
+from box.common.callclasses import respondedclass
 from box.common.planes.control import Ping, Pong, Pang
 from box.common.planes.control import ProcessorRegister, ProcessorRegisterResp
 from box.common.planes.control import ProcessorRegistryPull, ProcessorRegistryPullResp
@@ -19,7 +18,6 @@ from box.common.planes.control import ResourceRegistryPull, ResourceRegistryPull
 from box.common.planes.control import ResourceRegistryPush
 from box.common.resources import Processor, Resource
 from box.common.resources import is_null_url, BOX_NULL_URL
-from box.common.resources import url_to_host_port_path, get_address
 
 from box.cluster.util import LRUCache
 
@@ -68,8 +66,7 @@ def start():
 ## Ping
 
 @serdes.register
-@respondedclass
-@Ping.impl
+@respondedimpl(Ping)
 def Ping(self: Ping):
     controller_client.send(
         serdes.serialize(self)
@@ -77,18 +74,14 @@ def Ping(self: Ping):
 
 @serdes.register
 @respondedclass
-@respondingclass(to=[Ping])
-@Pong.impl
+@respondingimpl(Pong, to=[Ping])
 def Pong(self: Pong):
-    self.do_respond()
     pang = Pang.make_response(self, address=self.address, t0=self.t0, t1=self.t1)
     thread_pool.submit(pang)
 
 @serdes.register
-@respondingclass(to=[Pong])
-@Pang.impl
+@respondingimpl(Pang, to=[Pong])
 def Pang(self: Pang):
-    self.do_respond()
     controller_client.send(
         serdes.serialize(self)
     )
@@ -98,33 +91,27 @@ def Pang(self: Pang):
 ## Processor
 
 @serdes.register
-@respondedclass
-@ProcessorRegister.impl
+@respondedimpl(ProcessorRegister)
 def ProcessorRegister(self: ProcessorRegister):
     controller_client.send(
         serdes.serialize(self)
     )
     
 @serdes.register
-@respondingclass(to=[ProcessorRegister])
-@ProcessorRegisterResp.impl
+@respondingimpl(ProcessorRegisterResp, to=[ProcessorRegister])
 def ProcessorRegisterResp(self: ProcessorRegisterResp):
-    self.do_respond()
-    return self.ack
+    pass
 
 @serdes.register
-@respondedclass
-@ProcessorRegistryPull.impl
+@respondedimpl(ProcessorRegistryPull)
 def ProcessorRegistryPull(self: ProcessorRegistryPull):
     controller_client.send(
         serdes.serialize(self)
     )
 
 @serdes.register
-@respondingclass(to=[ProcessorRegistryPull])
-@ProcessorRegistryPullResp.impl
+@respondingimpl(ProcessorRegistryPullResp, to=[ProcessorRegistryPull])
 def ProcessorRegistryPullResp(self: ProcessorRegistryPullResp):
-    self.do_respond()
     for address, processor in self.processors.items():
         if is_null_url(processor.address):
             processor.address = BOX_NULL_URL
@@ -132,8 +119,7 @@ def ProcessorRegistryPullResp(self: ProcessorRegistryPullResp):
             proc_cache.put(address, processor)
 
 @serdes.register
-@callclass
-@ProcessorRegistryPush.impl
+@impl(ProcessorRegistryPush)
 def ProcessorRegistryPush(self: ProcessorRegistryPush):
     for processor in self.processors:
         if is_null_url(processor.address):
@@ -146,33 +132,27 @@ def ProcessorRegistryPush(self: ProcessorRegistryPush):
 # Resource
 
 @serdes.register
-@respondedclass
-@ResourceRegister.impl
+@respondedimpl(ResourceRegister)
 def ResourceRegister(self: ResourceRegister):
     controller_client.send(
         serdes.serialize(self)
     )
 
 @serdes.register
-@respondingclass(to=[ResourceRegister])
-@ResourceRegisterResp.impl
+@respondingimpl(ResourceRegisterResp, to=[ResourceRegister])
 def ResourceRegisterResp(self: ResourceRegisterResp):
-    self.do_respond()
-    return all(self.acks)
+    pass
 
 @serdes.register
-@respondedclass
-@ResourceRegistryPull.impl
+@respondedimpl(ResourceRegistryPull)
 def ResourceRegistryPull(self: ResourceRegistryPull):
     controller_client.send(
         serdes.serialize(self)
     )
 
 @serdes.register
-@respondingclass(to=[ResourceRegistryPull])
-@ResourceRegistryPullResp.impl
+@respondingimpl(ResourceRegistryPullResp, to=[ResourceRegistryPull])
 def ResourceRegistryPullResp(self: ResourceRegistryPullResp):
-    self.do_respond()
     for path, resource in self.resources.items():
         if resource.path == "":
             resource.path = "/"
@@ -181,8 +161,7 @@ def ResourceRegistryPullResp(self: ResourceRegistryPullResp):
         res_cache.put(path, resource)
 
 @serdes.register
-@respondedclass
-@ResourceRegistryPush.impl
+@respondedimpl(ResourceRegistryPush)
 def ResourceRegistryPush(self: ResourceRegistryPush):
     for resource in self.resources:
         if resource.path == "":
@@ -194,8 +173,10 @@ def ResourceRegistryPush(self: ResourceRegistryPush):
 def register_processor(address: str, token: str = "", desc: str = "", usage: float = nan, ttl: float = 5):
     _processor = Processor(timestamp=time(), ttl=ttl, address=address, token=token, desc=desc, usage=usage)
     _call = ProcessorRegister(_processor)
-    _resp, _ret = _call()
-    return _ret
+    _ret, _resp = _call()
+    if _resp is None:
+        return False
+    return _resp.ack
 
 def register_resource(address: str, paths: List[str], ttl: float = 5):
     _resources = []
@@ -206,12 +187,14 @@ def register_resource(address: str, paths: List[str], ttl: float = 5):
             _path = "/"
         _resources.append(Resource(path=_path, owner=address, ttl=ttl))
     _call = ResourceRegister(resources=_resources)
-    _resp, _ret = _call()
-    return _ret
+    _ret, _resp = _call()
+    if _resp is None:
+        return False
+    return all(_resp.acks)
 
 def ping(address: str, desc: str = "", usage: float = nan):
     _call = Ping(address=address, desc=desc, usage=usage)
-    _pong, _ret = _call()
+    _ret, _pong = _call()
     if _pong is None:
         return None
     _rtt = (time() - _pong.t0)

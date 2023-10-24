@@ -1,10 +1,11 @@
 
 
-from dataclasses import dataclass, is_dataclass, make_dataclass
-from ._callclass import callclass, is_callclass
+from dataclasses import dataclass, make_dataclass
+from functools import wraps
+from ._callclass import callclass, is_callclass, impl
 from ._responded import is_respondedclass
 
-from ._callclass import _PARAM_MAGIC__MODULE__
+from ._callclass import _PARAM_FUNC
 from ._responded import _PARAM_RESPONSES, _PARAM_RESP_SESSION
 from ._responded import _PARAM_FIELD_SESSION_TYPE
 
@@ -53,7 +54,7 @@ def _process_class(cls,
     to=None,
     rsession=None,
     rsession_type=None,
-    func=__callclass_dorespond,
+    func=None,
 ):
     _rsession = rsession if not rsession is None else _PARAM_FIELD_RSESSION
     _rsession_type = rsession_type if not rsession_type is None else _PARAM_FIELD_RSESSION_TYPE
@@ -65,7 +66,9 @@ def _process_class(cls,
         module=cls.__module__,
     )
     
-    cls = callclass(cls, func)
+    cls = callclass(cls, None)
+    if getattr(cls, _PARAM_FUNC, None) is None:
+        setattr(cls, _PARAM_FUNC, __callclass_dorespond if func is None else func)
 
     if not to is None:
         setattr(cls, _PARAM_RESPOND_TO, to)
@@ -99,28 +102,21 @@ def is_respondingclass(obj):
 def respondingclass(to,
     rsession=None,
     rsession_type=None,
-    func=__callclass_dorespond,
+    func=None,
 ):
     def wrap(cls):
         return _process_class(cls, to, rsession, rsession_type, func)
     
     return wrap
 
-def responding(cls, to):
+def respondingimpl(cls, to):
     def wrap(func):
-        if not func.__name__ == cls.__name__:
-            raise SyntaxWarning("Suggested to create a callclass implementation with the same name of the base class.")
-        wrapped = type.new_class(
-            cls.__name__,
-            (cls),
-            { _PARAM_MAGIC__MODULE__: func.__module__ }
-        )
-        return _process_class(wrapped, to=to, func=func)
-    
-    if not isinstance(cls, type) or not is_dataclass(cls):
-        raise TypeError("Can only create callclass from a dataclass.")
-    
-    return wrap(cls)
+        @wraps(func)
+        def _func(self):
+            self.do_respond()
+            func(self)
+        return respondingclass(to=to)(impl(cls)(_func))
+    return wrap
 
 @respondingclass(to=[])
 class Responding:

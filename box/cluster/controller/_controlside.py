@@ -1,14 +1,12 @@
 
 
 from concurrent.futures import ThreadPoolExecutor
-from math import inf
 from time import time
 
 from box.cluster.network import Server
 from box.cluster.network import Serdes
-from box.common.callclasses import callclass
+from box.common.callclasses import impl, respondedimpl, respondingimpl
 from box.common.callclasses import respondedclass, is_respondedclass
-from box.common.callclasses import respondingclass
 from box.common.planes.control import Ping, Pong, Pang
 from box.common.planes.control import ProcessorRegister, ProcessorRegisterResp
 from box.common.planes.control import ProcessorRegistryPull, ProcessorRegistryPullResp
@@ -31,7 +29,7 @@ EMPTY_PROCESSOR = EmptyProcessor(address=BOX_NULL_URL)
 EMPTY_RESOURCE = EmptyResource(path="/")
 
 serdes              : Serdes                = Serdes()
-res_lut             : LutNode               = LutNode()
+res_lut             : LutNode               = LutNode(None)
 proc_dict           : ProcDict              = ProcDict()
 
 thread_pool         : ThreadPoolExecutor    = None
@@ -72,8 +70,7 @@ def start():
 ## Ping
 
 @serdes.register
-@respondedclass
-@Ping.impl
+@respondedimpl(Ping)
 def Ping(self: Ping):
     pong = Pong.make_response(self, address=self.address, t0=self.t0)
     thread_pool.submit(pong)
@@ -81,41 +78,35 @@ def Ping(self: Ping):
 
 @serdes.register
 @respondedclass
-@respondingclass(to=[Ping])
-@Pong.impl
+@respondingimpl(Pong, to=[Ping])
 def Pong(self: Pong):
-    self.do_respond()
     pang = self.get_response()
     rtt = 0.5 * (time() + pang.t2 - pang.t1 - pang.t0)
     proc_dict.update(self.address, rtt=rtt)
 
 @serdes.register
-@respondingclass(to=[Pong])
-@Pang.impl
+@respondingimpl(Pang, to=[Pong])
 def Pang(self: Pang):
-    self.do_respond()
+    proc_dict.update(self.address, self.t2)
 
 
 
 ## Processor
 
 @serdes.register
-@respondedclass
-@ProcessorRegister.impl
+@respondedimpl(ProcessorRegister)
 def ProcessorRegister(self: ProcessorRegister):
     ack = proc_dict.insert(self.processor)
     resp = ProcessorRegisterResp.make_response(self, ack=ack)
     thread_pool.submit(resp)
     
 @serdes.register
-@respondingclass(to=[ProcessorRegister])
-@ProcessorRegisterResp.impl
+@respondingimpl(ProcessorRegisterResp, to=[ProcessorRegister])
 def ProcessorRegisterResp(self: ProcessorRegisterResp):
-    self.do_respond()
+    pass
 
 @serdes.register
-@respondedclass
-@ProcessorRegistryPull.impl
+@respondedimpl(ProcessorRegistryPull)
 def ProcessorRegistryPull(self: ProcessorRegistryPull):
     processors = {}
     for address in set(self.addresses):
@@ -128,14 +119,12 @@ def ProcessorRegistryPull(self: ProcessorRegistryPull):
     ProcessorRegistryPullResp.make_response(self, processors=processors)
 
 @serdes.register
-@respondingclass(to=[ProcessorRegistryPull])
-@ProcessorRegistryPullResp.impl
+@respondingimpl(ProcessorRegistryPullResp, to=[ProcessorRegistryPull])
 def ProcessorRegistryPullResp(self: ProcessorRegistryPullResp):
-    self.do_respond()
+    pass
 
 @serdes.register
-@callclass
-@ProcessorRegistryPush.impl
+@impl(ProcessorRegistryPush)
 def ProcessorRegistryPush(self: ProcessorRegistryPush):
     pass
 
@@ -144,21 +133,18 @@ def ProcessorRegistryPush(self: ProcessorRegistryPush):
 # Resource
 
 @serdes.register
-@respondedclass
-@ResourceRegister.impl
+@respondedimpl(ResourceRegister)
 def ResourceRegister(self: ResourceRegister):
     acks = [res_lut.insert(res.path, res) for res in self.resources]
     ResourceRegisterResp.make_response(self, acks=acks)
 
 @serdes.register
-@respondingclass(to=[ResourceRegister])
-@ResourceRegisterResp.impl
+@respondingimpl(ResourceRegisterResp, to=[ResourceRegister])
 def ResourceRegisterResp(self: ResourceRegisterResp):
-    self.do_respond()
+    pass
 
 @serdes.register
-@respondedclass
-@ResourceRegistryPull.impl
+@respondedimpl(ResourceRegistryPull)
 def ResourceRegistryPull(self: ResourceRegistryPull):
     resources = {}
     for path in set(self.paths):
@@ -171,14 +157,12 @@ def ResourceRegistryPull(self: ResourceRegistryPull):
     ResourceRegistryPullResp.make_response(self, resources=resources)
 
 @serdes.register
-@respondingclass(to=[ResourceRegistryPull])
-@ResourceRegistryPullResp.impl
+@respondingimpl(ResourceRegistryPullResp, to=[ResourceRegistryPull])
 def ResourceRegistryPullResp(self: ResourceRegistryPullResp):
-    self.do_respond()
+    pass
 
 @serdes.register
-@respondedclass
-@ResourceRegistryPush.impl
+@respondedimpl(ResourceRegistryPush)
 def ResourceRegistryPush(self: ResourceRegistryPush):
     pass
 
